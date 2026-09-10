@@ -1,12 +1,25 @@
 import streamlit as st
-import requests
+import pandas as pd
+import numpy as np
+import joblib
+import shap
 
 st.set_page_config(page_title="Churn Prediction Dashboard", layout="centered")
 
+# Load model, scaler, columns (cached so it only loads once)
+@st.cache_resource
+def load_artifacts():
+    model = joblib.load("model/churn_model.pkl")
+    scaler = joblib.load("model/scaler.pkl")
+    model_columns = joblib.load("model/model_columns.pkl")
+    background = pd.DataFrame([np.zeros(len(model_columns))], columns=model_columns)
+    explainer = shap.LinearExplainer(model, background)
+    return model, scaler, model_columns, explainer
+
+model, scaler, model_columns, explainer = load_artifacts()
+
 st.title("📊 Customer Churn Prediction Dashboard")
 st.write("Enter customer details to predict churn risk.")
-
-API_URL = "http://127.0.0.1:8000/predict"
 
 with st.form("customer_form"):
     col1, col2 = st.columns(2)
@@ -37,7 +50,7 @@ with st.form("customer_form"):
     submitted = st.form_submit_button("Predict Churn")
 
 if submitted:
-    payload = {
+    raw_input = {
         "gender": gender, "SeniorCitizen": SeniorCitizen, "Partner": Partner,
         "Dependents": Dependents, "tenure": tenure, "PhoneService": PhoneService,
         "MultipleLines": MultipleLines, "InternetService": InternetService,
@@ -49,18 +62,40 @@ if submitted:
         "TotalCharges": TotalCharges
     }
 
-    response = requests.post(API_URL, json=payload)
-    result = response.json()
+    input_df = pd.DataFrame([raw_input])
+    input_df['gender'] = input_df['gender'].map({'Male': 1, 'Female': 0})
+    for col in ['Partner', 'Dependents', 'PhoneService', 'PaperlessBilling']:
+        input_df[col] = input_df[col].map({'Yes': 1, 'No': 0})
+
+    multi_cat_cols = ['MultipleLines', 'InternetService', 'OnlineSecurity', 'OnlineBackup',
+                       'DeviceProtection', 'TechSupport', 'StreamingTV', 'StreamingMovies',
+                       'Contract', 'PaymentMethod']
+    input_df = pd.get_dummies(input_df, columns=multi_cat_cols)
+
+    for col in model_columns:
+        if col not in input_df.columns:
+            input_df[col] = 0
+    input_df = input_df[model_columns]
+    input_df = input_df.astype(float)
+
+    num_cols = ['tenure', 'MonthlyCharges', 'TotalCharges']
+    input_df[num_cols] = scaler.transform(input_df[num_cols])
+
+    prediction = model.predict(input_df)[0]
+    probability = model.predict_proba(input_df)[0][1]
 
     st.subheader("Prediction Result")
-    if result["churn_prediction"] == "Yes":
-        st.error(f"⚠️ High Churn Risk — Probability: {result['churn_probability']*100:.2f}%")
+    if prediction == 1:
+        st.error(f"⚠️ High Churn Risk — Probability: {probability*100:.2f}%")
     else:
-        st.success(f"✅ Low Churn Risk — Probability: {result['churn_probability']*100:.2f}%")
+        st.success(f"✅ Low Churn Risk — Probability: {probability*100:.2f}%")
+
+    shap_values = explainer.shap_values(input_df)[0]
+    contributions = list(zip(model_columns, shap_values))
+    contributions.sort(key=lambda x: abs(x[1]), reverse=True)
 
     st.subheader("Why this prediction?")
     st.write("Top factors influencing this result:")
-
-    for factor in result["top_factors"]:
-        direction = "🔺 Increases churn risk" if factor["impact"] > 0 else "🔻 Decreases churn risk"
-        st.write(f"**{factor['feature']}** — {direction} (impact: {factor['impact']:.3f})")
+    for feat, val in contributions[:5]:
+        direction = "🔺 Increases churn risk" if val > 0 else "🔻 Decreases churn risk"
+        st.write(f"**{feat}** — {direction} (impact: {val:.3f})")

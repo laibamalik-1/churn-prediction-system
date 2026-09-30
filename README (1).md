@@ -1,43 +1,8 @@
 # Customer Churn Prediction System
 
-An end-to-end machine learning system that predicts customer churn risk and explains *why* each prediction was made, built with a full pipeline from raw data to a deployed, interactive web app.
+An end-to-end churn project: a machine learning model, a Streamlit app for live predictions, and a Power BI dashboard for the whole customer base.
 
-🔗 **Live App**: [churn-predictionsystem.streamlit.app](https://churn-predictionsystem.streamlit.app/)
-
-## Overview
-
-This isn't just a trained model — it's a complete system:
-- Data cleaning and feature engineering pipeline
-- A trained, evaluated classification model
-- Model explainability using SHAP
-- An interactive web dashboard for real-time predictions
-- Public deployment
-
-## Problem
-
-Telecom companies lose revenue when customers cancel their service ("churn"). Retaining an existing customer is far cheaper than acquiring a new one, so predicting *which* customers are at risk — and *why* — lets a business intervene before it's too late.
-
-## Dataset
-
-[Telco Customer Churn](https://www.kaggle.com/datasets/blastchar/telco-customer-churn) (Kaggle) — 7,043 customers, 20 features including demographics, account information, and services subscribed to.
-
-## Approach
-
-1. **Data cleaning**: handled missing values in `TotalCharges`, encoded categorical variables (binary mapping + one-hot encoding)
-2. **Handling class imbalance**: the dataset is ~73% non-churn / ~27% churn — addressed using `class_weight='balanced'` rather than relying on raw accuracy
-3. **Modeling**: compared Logistic Regression and Random Forest; selected a balanced Logistic Regression model based on churn-class recall, since missing an at-risk customer is costlier than a false alarm
-4. **Evaluation**: ROC-AUC of 0.84, with 78% recall on the churn class
-5. **Explainability**: SHAP values computed per-prediction, surfacing the top factors driving each individual churn risk score
-6. **Deployment**: packaged into a single Streamlit app and deployed on Streamlit Community Cloud
-
-## Tech Stack
-
-- **Python**, **pandas**, **numpy** — data handling
-- **scikit-learn** — modeling and evaluation
-- **SHAP** — model explainability
-- **Streamlit** — interactive dashboard
-- **Git/GitHub** — version control
-- **Streamlit Community Cloud** — deployment
+**Live app:** [churn-predictionsystem.streamlit.app](https://churn-predictionsystem.streamlit.app/)
 
 ## Key Results
 
@@ -47,35 +12,40 @@ Telecom companies lose revenue when customers cancel their service ("churn"). Re
 | Churn class recall | 0.78 |
 | Churn class precision | 0.50 |
 
-## What the App Does
+The model catches 78% of customers who actually churn. About half of the customers it flags as churners really do churn.
 
-Enter a customer's details (tenure, contract type, services, charges, etc.) and get:
-- A churn risk prediction (Yes/No) with probability
-- The top 5 factors driving that specific prediction, with direction (increases/decreases risk)
+## Project Components
 
-## Project Structure
+1. **ML model** (Logistic Regression): predicts whether a telecom customer will churn.
+2. **Streamlit app**: enter a customer's details and get a live churn prediction.
+3. **Power BI dashboard** (`powerbi/` folder) with three pages:
+   - **Churn Overview**: who has churned so far (by contract, tenure, internet service, payment method)
+   - **Predictions**: churn probability and risk level (Low/Medium/High) for every customer, plus a call list of high-risk customers
+   - **Churn Reasons**: top 10 features that increase or reduce churn, taken from the model coefficients
 
-```
-churn-prediction-system/
-├── dashboard/
-│   ├── app.py              # Streamlit app (model + UI, self-contained)
-│   ├── requirements.txt
-│   └── model/               # trained model, scaler, column structure
-├── api/
-│   └── main.py              # FastAPI backend (for local/API-based use)
-├── model/                   # original saved model artifacts
-└── requirements.txt
-```
+## How the Model Connects to the Dashboard
 
-## Running Locally
+- `export_predictions.py` runs the trained model on all 7,043 customers and saves `predictions.csv` (churn probability and risk level per customer).
+- `export_reasons.py` saves the model coefficients to `reasons.csv`.
+- Power BI joins `predictions.csv` with the Telco data on `customerID`.
+- The CSV files are snapshots. After retraining the model, run both scripts again and refresh Power BI.
 
-```bash
-git clone https://github.com/laibamalik-1/churn-prediction-system.git
-cd churn-prediction-system/dashboard
-pip install -r requirements.txt
-streamlit run app.py
-```
+## Key Insights
 
-## Author
+- Month-to-month contracts, Fiber optic internet and Electronic check payments show the highest churn rates.
+- Two-year contracts and longer tenure strongly reduce churn.
+- 2,517 customers are classified as High risk.
 
-Laiba Malik
+## Dashboard Screenshots
+
+![Churn Overview](powerbi/screenshots/page1.png)
+![Predictions](powerbi/screenshots/page2.png)
+![Churn Reasons](powerbi/screenshots/page3.png)
+
+## Tech Stack
+
+Python, pandas, scikit-learn, Streamlit, Power BI
+
+## Dataset
+
+Telco Customer Churn (IBM sample dataset, Kaggle)

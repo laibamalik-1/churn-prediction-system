@@ -1,0 +1,31 @@
+Feature,Coefficient,Impact,Abs_Coefficient
+Contract_Two year,-1.4125356109539016,Reduces churn,1.4125356109539016
+InternetService_Fiber optic,1.2223521969499822,Increases churn,1.2223521969499822
+tenure,-1.156175309137041,Reduces churn,1.156175309137041
+Contract_One year,-0.7152682474338578,Reduces churn,0.7152682474338578
+MonthlyCharges,-0.5461886365217196,Reduces churn,0.5461886365217196
+TotalCharges,0.4865409139350471,Increases churn,0.4865409139350471
+StreamingMovies_Yes,0.4206109873923977,Increases churn,0.4206109873923977
+PaymentMethod_Electronic check,0.4024781633796402,Increases churn,0.4024781633796402
+StreamingTV_Yes,0.3953585887530902,Increases churn,0.3953585887530902
+PhoneService,-0.3480136151319481,Reduces churn,0.3480136151319481
+PaperlessBilling,0.3364487779783528,Increases churn,0.3364487779783528
+OnlineSecurity_Yes,-0.334945774018533,Reduces churn,0.334945774018533
+MultipleLines_Yes,0.324741606474968,Increases churn,0.324741606474968
+TechSupport_Yes,-0.26855683754237963,Reduces churn,0.26855683754237963
+Dependents,-0.23122539734183034,Reduces churn,0.23122539734183034
+MultipleLines_No phone service,-0.18927718219072304,Reduces churn,0.18927718219072304
+OnlineBackup_No internet service,-0.18300306515488948,Reduces churn,0.18300306515488948
+OnlineSecurity_No internet service,-0.18300306515488948,Reduces churn,0.18300306515488948
+InternetService_No,-0.18300306515488948,Reduces churn,0.18300306515488948
+StreamingMovies_No internet service,-0.18300306515488948,Reduces churn,0.18300306515488948
+TechSupport_No internet service,-0.18300306515488948,Reduces churn,0.18300306515488948
+DeviceProtection_No internet service,-0.18300306515488948,Reduces churn,0.18300306515488948
+StreamingTV_No internet service,-0.18300306515488948,Reduces churn,0.18300306515488948
+SeniorCitizen,0.15386879215902488,Increases churn,0.15386879215902488
+OnlineBackup_Yes,-0.070674739295631,Reduces churn,0.070674739295631
+PaymentMethod_Mailed check,0.05231266054652397,Increases churn,0.05231266054652397
+DeviceProtection_Yes,0.0411515828860215,Increases churn,0.0411515828860215
+gender,0.030554967581820594,Increases churn,0.030554967581820594
+Partner,0.018775680806174817,Increases churn,0.018775680806174817
+PaymentMethod_Credit card (automatic),-0.0006708033695036107,Reduces churn,0.0006708033695036107
